@@ -7,15 +7,45 @@ on:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   ci:
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
+    name: CI (mise run ci)
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: jdx/mise-action@v2
       - run: mise run ci
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  test:
+    name: Test advcpmv@${{ matrix.version }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # Note: 0.5-8.21 is intentionally excluded from the test matrix.
+        # It is the oldest advcpmv version (coreutils 8.21, from 2012) and
+        # its bundled gnulib does not build with modern GCC on ubuntu-latest.
+        # The upstream advcpmv project builds such old versions in Ubuntu 18.04
+        # containers (see .github/workflows/test-patches.yml in jarun/advcpmv).
+        version: ["latest", "1.0-9.12", "1.0-9.0", "0.8-8.32"]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jdx/mise-action@v2
+
+      - name: Link local plugin
+        run: mise plugin link --force advcpmv .
+
+      - name: List available versions
+        run: mise ls-remote advcpmv
+
+      - name: Install advcpmv@${{ matrix.version }}
+        run: mise install advcpmv@${{ matrix.version }}
+
+      - name: Test advcp --version
+        run: mise exec advcpmv@${{ matrix.version }} -- advcp --version
+
+      - name: Test advmv --version
+        run: mise exec advcpmv@${{ matrix.version }} -- advmv --version
