@@ -15,5 +15,11 @@ Thumbs.db
 *.bak
 *.backup
 
+# mise test directories
+.mise-test/
+
 # Logs
 *.log
+
+# mise test directories
+.mise-test/

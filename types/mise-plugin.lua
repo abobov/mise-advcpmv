@@ -63,6 +63,7 @@ ARCH_TYPE = ""
 ---@field rootPath string Installation root path
 ---@field runtimeVersion string Runtime version
 ---@field sdkInfo table<string, SdkInfo> SDK info for installed versions
+---@field options table Plugin options from mise.toml
 
 ---@class SdkInfo
 ---@field name string SDK name

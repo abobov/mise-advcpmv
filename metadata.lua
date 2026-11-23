@@ -4,29 +4,31 @@
 
 PLUGIN = { -- luacheck: ignore
     -- Required: Plugin metadata name
-    name = "<TOOL>",
+    name = "advcpmv",
 
     -- Required: Plugin metadata version
     version = "1.0.0",
 
     -- Optional: Plugin description
-    description = "A mise tool plugin for <TOOL>",
+    description = "A mise tool plugin for advcpmv (Advanced Copy for GNU cp/mv)",
 
     -- Optional: Plugin author
-    author = "<GITHUB_USER>",
+    author = "abobov",
 
     -- Optional: License name
     license = "MIT",
 
     -- Optional: Plugin homepage
-    homepage = "https://github.com/<GITHUB_USER>/mise-<TOOL>",
+    homepage = "https://github.com/abobov/mise-advcpmv",
 
-    -- Optional: Legacy version files this plugin can parse
-    -- legacyFilenames = {
-    --     ".<TOOL>-version",
-    --     ".<TOOL>rc"
-    -- },
-
-    -- Optional: configured mise tools to add to install-hook PATH
-    -- depends = { "node" },
+    -- Optional: System dependencies needed to build from source
+    systemDependencies = {
+        { bin = "curl" },
+        { bin = "patch" },
+        { bin = "gcc" },
+        { bin = "makeinfo" },
+        { bin = "make" },
+        { bin = "tar" },
+        { bin = "xz" },
+    },
 }
