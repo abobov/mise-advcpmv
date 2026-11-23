@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: jdx/mise-action@v2
+      - uses: jdx/mise-action@v4
       - run: mise run ci
 
   test-latest:
@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: jdx/mise-action@v2
+      - uses: jdx/mise-action@v4
 
       - name: Link local plugin
         run: mise plugin link --force advcpmv .
