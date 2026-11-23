@@ -1,18 +1,31 @@
 #!/usr/bin/env bash
-#MISE description="Run plugin tests - install and execute tool"
+#MISE description="Run plugin tests - install and execute advcpmv"
 set -euo pipefail
 
-mise plugin link --force <TOOL> .
+mise plugin link --force advcpmv .
 mise cache clear
-mise install <TOOL>@1.0.0
+mise install advcpmv@1.0-9.12
 
-# Capture and display the output while also verifying it
-output=$(mise exec "<TOOL>@1.0.0" -- "<TOOL>" --version)
-echo "<TOOL> output: $output"
+# Capture and display advcp version output
+output=$(mise exec "advcpmv@1.0-9.12" -- advcp --version)
+echo "advcp output: $output"
 
-if echo "$output" | grep -q '<TOOL>@1.0.0'; then
-    echo "✓ Tests passed"
+if echo "$output" | grep -q 'advcpmv'; then
+    echo "✓ advcp test passed"
 else
-    echo "✗ Test failed: expected version <TOOL>@1.0.0"
+    echo "✗ Test failed: expected advcpmv in advcp --version output"
     exit 1
 fi
+
+# Verify advmv is also installed
+output_mv=$(mise exec "advcpmv@1.0-9.12" -- advmv --version)
+echo "advmv output: $output_mv"
+
+if echo "$output_mv" | grep -q 'advcpmv'; then
+    echo "✓ advmv test passed"
+else
+    echo "✗ Test failed: expected advcpmv in advmv --version output"
+    exit 1
+fi
+
+echo "✓ All tests passed"
