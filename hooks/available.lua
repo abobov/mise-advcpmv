@@ -1,53 +1,48 @@
---- Returns a list of available versions for the tool
+--- Returns a list of available versions for advcpmv
 --- Documentation: https://mise.jdx.dev/tool-plugin-development.html#available-hook
 --- @param ctx {args: string[]} Context (args = user arguments)
 --- @return table[] List of available versions
 function PLUGIN:Available(ctx)
     local http = require("http")
     local json = require("json")
+    local advcpmv = require("advcpmv")
 
-    -- Example 1: GitHub Tags API (most common)
-    -- Replace <GITHUB_USER>/<GITHUB_REPO> with your tool's repository
-    local repo_url = "https://api.github.com/repos/<GITHUB_USER>/<GITHUB_REPO>/tags"
-
-    -- Example 2: GitHub Releases API (for tools that use GitHub releases)
-    -- local repo_url = "https://api.github.com/repos/<GITHUB_USER>/<GITHUB_REPO>/releases"
-
-    -- For api.github.com requests, mise attaches a configured GitHub token automatically.
-    -- Do not read tokens or construct Authorization headers in the plugin. See README.md
-    -- for the supported private-repository setup.
-    local resp, err = http.get({
-        url = repo_url,
-    })
-
+    -- advcpmv patch files are hosted in the jarun/advcpmv repository on master.
+    -- List the repository contents and extract versions from patch filenames
+    -- like advcpmv-1.0-9.12.patch -> 1.0-9.12
+    local resp, err = http.get({ url = advcpmv.API_URL })
     if err ~= nil then
-        error("Failed to fetch versions: " .. err)
+        error("Failed to fetch advcpmv versions: " .. err)
     end
     if resp.status_code ~= 200 then
         error("GitHub API returned status " .. resp.status_code .. ": " .. resp.body)
     end
 
-    local tags = json.decode(resp.body)
-    local result = {}
+    local contents = json.decode(resp.body)
+    local versions = {}
 
-    -- Process tags/releases
-    for _, tag_info in ipairs(tags) do
-        local version = tag_info.name
-
-        -- Clean up version string (remove 'v' prefix if present)
-        -- version = version:gsub("^v", "")
-
-        -- For releases API, you might want:
-        -- local version = tag_info.tag_name:gsub("^v", "")
-        -- local is_prerelease = tag_info.prerelease or false
-        -- local note = is_prerelease and "pre-release" or nil
-
-        table.insert(result, {
-            version = version,
-            note = nil, -- Optional: "latest", "lts", "pre-release", etc.
-            -- addition = {} -- Optional: additional tools/components
-        })
+    for _, item in ipairs(contents) do
+        if item.type == "file" then
+            local name = item.name
+            -- Filename format: advcpmv-<patchver>-<coreutilsver>.patch
+            local patchver, coreutils_ver = name:match(advcpmv.PATCH_FILENAME_PATTERN)
+            if patchver and coreutils_ver then
+                local raw_version = patchver .. "-" .. coreutils_ver
+                table.insert(versions, raw_version)
+            end
+        end
     end
 
+    if #versions == 0 then
+        error("No advcpmv patch files found in " .. advcpmv.GITHUB_REPO .. " repository")
+    end
+
+    -- Sort versions descending (newest first)
+    advcpmv.sort_versions_desc(versions)
+
+    local result = {}
+    for _, version in ipairs(versions) do
+        table.insert(result, { version = version })
+    end
     return result
 end
