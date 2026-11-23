@@ -1,0 +1,42 @@
+name: Schedule
+
+on:
+  schedule:
+    # Run weekly on Monday at 06:00 UTC to detect when upstream
+    # jarun/advcpmv master publishes a new patch that breaks this plugin.
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    name: CI (mise run ci)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jdx/mise-action@v2
+      - run: mise run ci
+
+  test-latest:
+    name: Test advcpmv@latest (weekly)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jdx/mise-action@v2
+
+      - name: Link local plugin
+        run: mise plugin link --force advcpmv .
+
+      - name: List available versions
+        run: mise ls-remote advcpmv
+
+      - name: Install advcpmv@latest
+        run: mise install advcpmv@latest
+
+      - name: Test advcp --version
+        run: mise exec advcpmv@latest -- advcp --version
+
+      - name: Test advmv --version
+        run: mise exec advcpmv@latest -- advmv --version
