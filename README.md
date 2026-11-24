@@ -52,7 +52,7 @@ as advcpmv) that can be configured to run external copy/move commands.
 
 ## Platform Support
 
-advcpmv is **Linux-only**. It builds GNU coreutils from source using `gcc`, `patch`, `make`, and `makeinfo`, which are not reliably available on other platforms. `mise install advcpmv` will fail with a clear error on macOS or Windows.
+advcpmv builds GNU coreutils from source on **Linux** and **macOS** using `gcc`, `patch`, `make`, `makeinfo`, `tar`, and `xz`. On macOS these build dependencies can be installed with Homebrew (e.g. `brew install gcc texinfo xz`). `mise install advcpmv` will fail with a clear error on Windows or other unsupported platforms.
 
 ## How it works
 
