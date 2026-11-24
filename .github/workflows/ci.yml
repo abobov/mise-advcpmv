@@ -12,28 +12,48 @@ permissions:
 
 jobs:
   ci:
-    name: CI (mise run ci)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: jdx/mise-action@v4
-      - run: mise run ci
-
-  test:
-    name: Test advcpmv@${{ matrix.version }}
+    name: CI (mise run ci) on ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: jdx/mise-action@v4
+
+      - name: Install macOS build dependencies
+        if: runner.os == 'macOS'
+        run: brew install gcc texinfo xz
+
+      - run: mise run ci
+
+  test:
+    name: Test advcpmv@${{ matrix.version }} on ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
         # Note: 0.5-8.21 is intentionally excluded from the test matrix.
         # It is the oldest advcpmv version (coreutils 8.21, from 2012) and
         # its bundled gnulib does not build with modern GCC on ubuntu-latest.
         # The upstream advcpmv project builds such old versions in Ubuntu 18.04
         # containers (see .github/workflows/test-patches.yml in jarun/advcpmv).
+        # Note: 0.8-8.32 (coreutils 8.32) is excluded from macos-latest: its
+        # bundled gnulib (lib/obstack.c) fails with modern Xcode clang
+        # (-Wincompatible-function-pointer-types treated as error).
         version: ["latest", "1.0-9.12", "1.0-9.0", "0.8-8.32"]
-    runs-on: ubuntu-latest
+        exclude:
+          - os: macos-latest
+            version: "0.8-8.32"
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
       - uses: jdx/mise-action@v4
+
+      - name: Install macOS build dependencies
+        if: runner.os == 'macOS'
+        run: brew install gcc texinfo xz
 
       - name: Link local plugin
         run: mise plugin link --force advcpmv .

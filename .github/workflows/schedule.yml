@@ -21,10 +21,18 @@ jobs:
 
   test-latest:
     name: Test advcpmv@latest (weekly)
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
       - uses: jdx/mise-action@v4
+
+      - name: Install macOS build dependencies
+        if: runner.os == 'macOS'
+        run: brew install gcc texinfo xz
 
       - name: Link local plugin
         run: mise plugin link --force advcpmv .
