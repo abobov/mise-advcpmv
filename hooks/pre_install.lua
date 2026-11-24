@@ -6,12 +6,16 @@ function PLUGIN:PreInstall(ctx)
     local version = ctx.version -- e.g. "1.0-9.12"
     local advcpmv = require("advcpmv")
 
-    -- advcpmv builds GNU coreutils from source with gcc; this only works
-    -- reliably on Linux. Reject other platforms early with a clear message.
-    if RUNTIME.osType:lower() ~= "linux" then
+    -- advcpmv builds GNU coreutils from source with gcc. It builds on
+    -- Linux and macOS (darwin). Reject other platforms early with a clear
+    -- message so the user gets a fast failure on unsupported OSes.
+    local os = RUNTIME.osType:lower()
+    if os ~= "linux" and os ~= "darwin" then
         error(
-            "advcpmv is Linux-only. Building from source requires gcc, "
-                .. "patch, make, and makeinfo which are not supported on "
+            "advcpmv is not supported on "
+                .. RUNTIME.osType
+                .. ". Building from source requires gcc, patch, make, "
+                .. "makeinfo, tar, and xz which are not available on "
                 .. RUNTIME.osType
                 .. "."
         )
